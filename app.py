@@ -89,7 +89,7 @@ def chat():
         data = response.json()
         ai_message = data["choices"][0]["message"]["content"]
     except Exception as e:
-        ai_message = "Hindi maabot ang LM Studio server. Siguraduhing naka-run ito sa port 1234."
+        ai_message = "Server Not Available."
 
     conversation.append({
         "role": "assistant",
