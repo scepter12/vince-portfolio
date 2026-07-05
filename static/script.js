@@ -148,7 +148,7 @@ async function sendMessage() {
     } catch (e) {
         thinkingNode.innerHTML = "";
         thinkingNode.classList.remove("thinking-indicator");
-        thinkingNode.textContent = "Hindi maabot ang server ng LM Studio. Siguraduhing tumatakbo ito sa port 1234.";
+        thinkingNode.textContent = "Server Not Available.";
     }
 
     messages.scrollTop = messages.scrollHeight;
