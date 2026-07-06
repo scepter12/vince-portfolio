@@ -39,6 +39,15 @@ Rules:
 """
 }
 
+# Load Gemini API Key
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+if not GEMINI_API_KEY and os.path.exists(".env"):
+    with open(".env", "r") as f:
+        for line in f:
+            if line.strip().startswith("GEMINI_API_KEY="):
+                GEMINI_API_KEY = line.split("=", 1)[1].strip()
+                break
+
 def load_conversation():
     if os.path.exists(HISTORY_FILE):
         try:
@@ -76,20 +85,66 @@ def chat():
         "content": user_message
     })
 
-    payload = {
-        "model": MODEL,
-        "messages": conversation,
-        "temperature": 0.7,
-        "max_tokens": 500
-    }
+    global GEMINI_API_KEY
+    # Reload key if it wasn't loaded
+    if not GEMINI_API_KEY and os.path.exists(".env"):
+        with open(".env", "r") as f:
+            for line in f:
+                if line.strip().startswith("GEMINI_API_KEY="):
+                    GEMINI_API_KEY = line.split("=", 1)[1].strip()
+                    break
 
-    try:
-        response = requests.post(LM_STUDIO_URL, json=payload, timeout=30)
-        response.raise_for_status()
-        data = response.json()
-        ai_message = data["choices"][0]["message"]["content"]
-    except Exception as e:
-        ai_message = "Server Not Available."
+    if GEMINI_API_KEY:
+        # Use Google Gemini API
+        contents = []
+        for msg in conversation:
+            if msg["role"] == "system":
+                continue
+            role = "model" if msg["role"] == "assistant" else "user"
+            contents.append({
+                "role": role,
+                "parts": [{"text": msg["content"]}]
+            })
+            
+        system_instruction = {
+            "parts": [{"text": DEFAULT_SYSTEM_PROMPT["content"]}]
+        }
+        
+        payload = {
+            "contents": contents,
+            "systemInstruction": system_instruction,
+            "generationConfig": {
+                "temperature": 0.7,
+                "maxOutputTokens": 500
+            }
+        }
+        
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+        try:
+            response = requests.post(url, json=payload, timeout=30)
+            response.raise_for_status()
+            data = response.json()
+            ai_message = data["candidates"][0]["content"]["parts"][0]["text"]
+        except Exception as e:
+            print("Gemini API Error:", e)
+            ai_message = "Server Not Available."
+    else:
+        # Use local LM Studio fallback
+        payload = {
+            "model": MODEL,
+            "messages": conversation,
+            "temperature": 0.7,
+            "max_tokens": 500
+        }
+
+        try:
+            response = requests.post(LM_STUDIO_URL, json=payload, timeout=30)
+            response.raise_for_status()
+            data = response.json()
+            ai_message = data["choices"][0]["message"]["content"]
+        except Exception as e:
+            print("LM Studio Error:", e)
+            ai_message = "Server Not Available."
 
     conversation.append({
         "role": "assistant",
