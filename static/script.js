@@ -187,3 +187,43 @@ async function resetChat() {
 
 // Automatically load history on page load
 window.addEventListener("DOMContentLoaded", loadHistory);
+
+// Contact Form AJAX Submission
+const contactForm = document.querySelector(".contact-form");
+if (contactForm) {
+    contactForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const submitBtn = contactForm.querySelector('input[type="submit"]');
+        const originalBtnValue = submitBtn.value;
+        submitBtn.value = "Sending...";
+        submitBtn.disabled = true;
+        
+        const formData = new FormData(contactForm);
+        const object = Object.fromEntries(formData);
+        const json = JSON.stringify(object);
+        
+        try {
+            const response = await fetch("https://api.web3forms.com/submit", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: json
+            });
+            const result = await response.json();
+            if (response.status === 200) {
+                alert("Mensahe ay matagumpay na naipadala!");
+                contactForm.reset();
+            } else {
+                alert("May naganap na isyu: " + result.message);
+            }
+        } catch (error) {
+            alert("Hindi maipadala ang mensahe. Pakisubukang muli mamaya.");
+        } finally {
+            submitBtn.value = originalBtnValue;
+            submitBtn.disabled = false;
+        }
+    });
+}
