@@ -203,7 +203,7 @@ section {
     font-weight: 800;
     line-height: 1.2;
     margin-bottom: 16px;
-    height: 72px; /* Prevent layout shifting */
+    min-height: 80px;
 }
 
 .home-content .typing-text {
