@@ -157,6 +157,17 @@ def chat():
         "response": ai_message
     })
 
+@app.route("/contact", methods=["POST"])
+def contact():
+    data = request.json
+    webhook_url = "https://basis-delirium-tulip.ngrok-free.dev/webhook-test/1c96d5ff-2e67-47cb-85f3-de7a8452b35d"
+    try:
+        response = requests.post(webhook_url, json=data, timeout=15)
+        return jsonify({"success": response.ok}), response.status_code
+    except Exception as e:
+        print("Webhook Error:", e)
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route("/reset", methods=["POST"])
 def reset():
     conversation = [DEFAULT_SYSTEM_PROMPT]
