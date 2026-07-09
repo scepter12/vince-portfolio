@@ -188,42 +188,59 @@ async function resetChat() {
 // Automatically load history on page load
 window.addEventListener("DOMContentLoaded", loadHistory);
 
-// Contact Form AJAX Submission
+// Contact Form -> n8n Webhook
 const contactForm = document.querySelector(".contact-form");
+
 if (contactForm) {
     contactForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        
+
         const submitBtn = contactForm.querySelector('input[type="submit"]');
-        const originalBtnValue = submitBtn.value;
+        const originalText = submitBtn.value;
+
         submitBtn.value = "Sending...";
         submitBtn.disabled = true;
-        
+
         const formData = new FormData(contactForm);
-        const object = Object.fromEntries(formData);
-        const json = JSON.stringify(object);
-        
+
+        const data = {
+            name: formData.get("name"),
+            email: formData.get("email"),
+            phone: formData.get("phone"),
+            subject: formData.get("subject"),
+            message: formData.get("message")
+        };
+
         try {
-            const response = await fetch("https://api.web3forms.com/submit", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                },
-                body: json
-            });
-            const result = await response.json();
-            if (response.status === 200) {
-                alert("Mensahe ay matagumpay na naipadala!");
+
+            const response = await fetch(
+                "https://basis-delirium-tulip.ngrok-free.dev/webhook-test/1c96d5ff-2e67-47cb-85f3-de7a8452b35d",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                }
+            );
+
+            if (response.ok) {
+                alert("Thank you! Your message has been sent.");
                 contactForm.reset();
             } else {
-                alert("May naganap na isyu: " + result.message);
+                alert("Unable to submit your message.");
             }
-        } catch (error) {
-            alert("Hindi maipadala ang mensahe. Pakisubukang muli mamaya.");
-        } finally {
-            submitBtn.value = originalBtnValue;
-            submitBtn.disabled = false;
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert("Server unavailable.");
+
         }
+
+        submitBtn.value = originalText;
+        submitBtn.disabled = false;
+
     });
 }
