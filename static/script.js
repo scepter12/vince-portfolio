@@ -214,7 +214,7 @@ if (contactForm) {
         try {
 
             const response = await fetch(
-                "https://basis-delirium-tulip.ngrok-free.dev/webhook-test/1c96d5ff-2e67-47cb-85f3-de7a8452b35d",
+                "/contact",
                 {
                     method: "POST",
                     headers: {
