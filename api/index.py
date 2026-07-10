@@ -3,7 +3,13 @@ import requests
 import json
 import os
 
-app = Flask(__name__, template_folder="../templates", static_folder="../static")
+# Resolve static and template paths dynamically relative to the current script location
+api_dir = os.path.dirname(os.path.abspath(__file__))
+project_dir = os.path.dirname(api_dir)
+template_dir = os.path.join(project_dir, "templates")
+static_dir = os.path.join(project_dir, "static")
+
+app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 
 LM_STUDIO_URL = "http://127.0.0.1:1234/v1/chat/completions"
 MODEL = "llama-3.2-3b-instruct"
